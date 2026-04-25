@@ -1,0 +1,17 @@
+--- a/drivers/i2c/Kconfig
++++ b/drivers/i2c/Kconfig
+@@ -45,6 +45,14 @@ config I2C_SH1106
+   This is the driver for SH1106 OLED displays via I2C.
+   Say Y here to enable SH1106 support.
+
++config KOMARU_DISPLAY
++tristate "Komaru SH1106 OLED display driver"
++depends on I2C
++help
++  KomaruPhone display driver for SH1106 OLED (128x64).
++  Used in the KomaruPhone open-source mobile device.
++  Say Y here.
++
+ source "drivers/i2c/busses/Kconfig"
+
+ endif # I2C

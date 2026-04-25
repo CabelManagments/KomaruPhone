@@ -1,0 +1,17 @@
+--- a/drivers/tty/serial/Kconfig
++++ b/drivers/tty/serial/Kconfig
+@@ -890,6 +890,14 @@ config SERIAL_8250_BCM2835AUX
+ komaru-display.patch   BCM2835 AUX (mini-UART). Say Y here to enable SIM800C modem
+ komaru-display.patch   support on Raspberry Pi.
+
++config KOMARU_MODEM
++tristate "Komaru SIM800C modem driver"
++depends on SERIAL_8250
++help
++  KomaruPhone modem driver for SIM800C via UART.
++  Provides AT command interface and call/SMS functions.
++  Say Y here.
++
+ endif # SERIAL_8250
+
+ config SERIAL_8250_FSL

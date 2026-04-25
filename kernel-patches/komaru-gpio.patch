@@ -1,0 +1,16 @@
+--- a/drivers/gpio/Kconfig
++++ b/drivers/gpio/Kconfig
+@@ -1570,6 +1570,14 @@ config GPIO_BCM_VIRT
+ komaru-  GPIO driver for BCM Virtual GPIO. Say Y here to enable
+ komaru-  virtual GPIO for BCM2708/BCM2711.
+
++config KOMARU_BUTTONS
++tristate "Komaru Phone buttons driver"
++depends on GPIO_BCM_VIRT
++help
++  KomaruPhone button driver for power, volume and programmable
++  buttons. Uses GPIO pins 17, 27, 22, 23.
++  Say Y here.
++
+ endif
+
