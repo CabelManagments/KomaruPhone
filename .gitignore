@@ -1,30 +1,41 @@
 # Собранные бинарники
 *.o
 *.ko
+*.so
 komaru_init
 komaru_devtool
+komaru_pc
 *.img
 *.elf
+*.bin
 
 # Временные файлы
 *~
 *.swp
 *.bak
-
-# Buildroot временные файлы
-buildroot-config/.config*
-buildroot-config/.*.cmd
-
-# Логи
 *.log
+*.tmp
+
+# Buildroot
+buildroot-config/.config*
+buildroot-config/.config
+buildroot-config/*.old
+buildroot/
 
 # IDE
 .vscode/
 .idea/
 *.code-workspace
 
-# macOS
+# Системное
 .DS_Store
-
-# Отчеты об ошибках
+Thumbs.db
 core.*
+*.core
+
+# Файлы конфигов с локальными данными
+*.conf.local
+
+# Сборка
+build/
+out/
