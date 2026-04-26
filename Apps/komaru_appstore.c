@@ -5,21 +5,19 @@
 #include <string.h>
 
 typedef struct {
-    const char *name;
-    const char *description;
-    const char *url;
+    char name[32];
+    char desc[64];
     int installed;
-} komaru_app_t;
+} komaru_app_item_t;
 
-static komaru_app_t available_apps[] = {
-    {"KomaruSettings", "Настройки системы", "local", 1},
-    {"KomaruGallery", "Просмотр фото", "local", 1},
-    {"KomaruBrowser", "Веб-браузер (coming soon)", "https://komaru.org/apps/browser", 0},
-    {"KomaruNotes", "Заметки", "https://komaru.org/apps/notes", 0},
-    {"KomaruChat", "Мессенджер", "https://komaru.org/apps/chat", 0},
-    {"KomaruWeather", "Погода", "https://komaru.org/apps/weather", 0},
-    {"KomaruTerminal", "Терминал", "local", 1},
-    {NULL, NULL, NULL, 0}
+static komaru_app_item_t apps[] = {
+    {"KomaruBrowser", "Web browser", 1},
+    {"KomaruNotes", "Notes app", 1},
+    {"KomaruGallery", "Image viewer", 1},
+    {"KomaruTerminal", "Terminal emulator", 0},
+    {"KomaruChat", "Messenger", 0},
+    {"KomaruWeather", "Weather app", 0},
+    {NULL, "", 0}
 };
 
 static int selected = 0;
@@ -29,51 +27,50 @@ void komaru_appstore_run(void) {
     
     while(running) {
         komaru_display_clear();
-        komaru_display_string("Komaru Store", 30, 5);
+        komaru_display_string("KomaruStore", 35, 2);
         
-        int count = 0;
-        for(int i = 0; available_apps[i].name != NULL; i++) {
+        int y = 14;
+        for(int i = 0; apps[i].name[0] != '\0' && y < 60; i++) {
             if(i == selected) {
-                komaru_display_string(">", 5, 20 + count*20);
+                komaru_display_string(">", 2, y);
             }
-            char line[64];
-            snprintf(line, sizeof(line), "%s %s", 
-                     available_apps[i].name,
-                     available_apps[i].installed ? "[✓]" : "[ ]");
-            komaru_display_string(line, 20, 20 + count*20);
-            count++;
+            char line[40];
+            snprintf(line, sizeof(line), "%s %s", apps[i].name, apps[i].installed ? "[✓]" : "[ ]");
+            komaru_display_string(line, 12, y);
+            y += 8;
         }
         
-        komaru_display_string("Power - установить", 20, 140);
-        komaru_display_string("Vol+/- - навигация", 20, 160);
+        komaru_display_string("Vol+/- select", 5, 60);
+        komaru_display_string("Power install", 70, 60);
+        komaru_display_update();
         
         int btn = komaru_buttons_read();
         if(btn & BTN_VOLUME_UP) {
-            selected = (selected + 1) % count;
-            usleep(200000);
+            selected++;
+            if(apps[selected].name[0] == '\0') selected = 0;
         }
         if(btn & BTN_VOLUME_DOWN) {
-            selected = (selected - 1 + count) % count;
-            usleep(200000);
-        }
-        if(btn & BTN_POWER) {
-            if(!available_apps[selected].installed) {
-                komaru_display_clear();
-                komaru_display_string("Скачивание...", 30, 60);
-                char cmd[256];
-                snprintf(cmd, sizeof(cmd), 
-                         "wget %s -O /apps/%s",
-                         available_apps[selected].url,
-                         available_apps[selected].name);
-                // system(cmd);
-                available_apps[selected].installed = 1;
-                usleep(2000000);
-            } else {
-                komaru_display_string("Уже установлено", 30, 60);
-                usleep(1000000);
+            selected--;
+            if(selected < 0) {
+                for(selected = 0; apps[selected].name[0] != '\0'; selected++);
+                selected--;
             }
         }
+        if(btn & BTN_POWER) {
+            if(!apps[selected].installed) {
+                komaru_display_clear();
+                komaru_display_string("Downloading...", 35, 30);
+                komaru_display_update();
+                usleep(1000000);
+                apps[selected].installed = 1;
+            } else {
+                running = 0;
+            }
+        }
+        if(btn & BTN_PROGRAM) {
+            running = 0;
+        }
         
-        komaru_display_update();
+        usleep(50000);
     }
 }
