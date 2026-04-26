@@ -1,18 +1,17 @@
 #include "komaru_sensors.h"
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <math.h>
 
-typedef struct {
-    float x, y, z;
-} sensor_data_t;
+static sensor_data_t accel = {0};
+static sensor_data_t gyro = {0};
+static sensor_data_t magn = {0};
 
-static sensor_data_t accel = {0, 0, 0};
-static sensor_data_t gyro = {0, 0, 0};
-static sensor_data_t magnet = {0, 0, 0};
-static int rotation = 0;  // 0=portrait, 1=landscape_left, 2=landscape_right
+void komaru_sensors_init(void) {
+    system("modprobe mpu6050 2>/dev/null");
+}
 
-static void parse_sensor_file(const char *path, sensor_data_t *data) {
+static void read_sensor(const char *path, sensor_data_t *data) {
     FILE *fp = fopen(path, "r");
     if(fp) {
         fscanf(fp, "%f %f %f", &data->x, &data->y, &data->z);
@@ -20,37 +19,18 @@ static void parse_sensor_file(const char *path, sensor_data_t *data) {
     }
 }
 
-void komaru_sensors_init(void) {
-    // В реальности данные читаются из /sys/class/iio_device/
-    // Пока заглушка с тестовыми значениями
-}
-
 void komaru_sensors_update(void) {
-    // Реальное чтение
-    parse_sensor_file("/sys/class/iio_device/accel/data", &accel);
-    parse_sensor_file("/sys/class/iio_device/gyro/data", &gyro);
-    parse_sensor_file("/sys/class/iio_device/magnet/data", &magnet);
-    
-    // Определяем ориентацию по акселерометру
-    float ax = accel.x;
-    float ay = accel.y;
-    
-    if(fabs(ax) > fabs(ay)) {
-        if(ax > 0) rotation = 1;   // landscape left
-        else rotation = 2;         // landscape right
-    } else {
-        rotation = 0;               // portrait
-    }
+    read_sensor("/sys/class/iio_device/accel/data", &accel);
+    read_sensor("/sys/class/iio_device/gyro/data", &gyro);
+    read_sensor("/sys/class/iio_device/magn/data", &magn);
 }
 
-float komaru_sensors_get_tilt(void) {
-    return atan2f(accel.y, accel.x) * 180 / M_PI;
-}
+sensor_data_t komaru_sensors_get_accel(void) { return accel; }
+sensor_data_t komaru_sensors_get_gyro(void) { return gyro; }
+sensor_data_t komaru_sensors_get_magnet(void) { return magn; }
 
 int komaru_sensors_get_rotation(void) {
-    return rotation;
-}
-
-void komaru_sensors_get_accel(float *x, float *y, float *z) {
-    *x = accel.x; *y = accel.y; *z = accel.z;
+    if(accel.x > 5) return 1;  // landscape
+    if(accel.x < -5) return 2; // landscape reverse
+    return 0;                   // portrait
 }
